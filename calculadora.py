@@ -1,0 +1,483 @@
+import tkinter as tk
+from tkinter import messagebox
+from sympy import *
+from sympy.parsing.sympy_parser import parse_expr
+
+import numpy as np
+import matplotlib.pyplot as plt
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+
+
+# Variable matemática
+x = symbols("x")
+
+
+class CalculadoraCalculoII:
+
+    def __init__(self, root):
+
+        self.root = root
+        self.root.title("Calculadora de Cálculo II")
+        self.root.geometry("1200x750")
+        self.root.configure(bg="#202030")
+
+        self.crear_interfaz()
+
+
+    # ---------------- INTERFAZ ----------------
+
+    def crear_interfaz(self):
+
+        titulo = tk.Label(
+            self.root,
+            text="CALCULADORA DE CÁLCULO II",
+            font=("Arial",25,"bold"),
+            bg="#202030",
+            fg="white"
+        )
+
+        titulo.pack(pady=15)
+
+
+        self.frame = tk.Frame(
+            self.root,
+            bg="#30304A"
+        )
+
+        self.frame.pack(
+            padx=20,
+            pady=10,
+            fill="both",
+            expand=True
+        )
+
+
+        tk.Label(
+            self.frame,
+            text="Función f(x):",
+            font=("Arial",14),
+            bg="#30304A",
+            fg="white"
+        ).grid(row=0,column=0,padx=10,pady=10)
+
+
+        self.entrada = tk.Entry(
+            self.frame,
+            width=35,
+            font=("Arial",14)
+        )
+
+        self.entrada.grid(row=0,column=1)
+
+
+
+        botones = [
+
+            ("Derivar", self.derivar),
+            ("Integrar", self.integrar),
+            ("Integral Def.", self.integral_definida),
+            ("Límite", self.limite),
+            ("Evaluar", self.evaluar),
+            ("Graficar", self.graficar),
+            ("Limpiar", self.limpiar)
+
+        ]
+
+
+        fila = 1
+        columna = 0
+
+
+        for texto, comando in botones:
+
+            tk.Button(
+                self.frame,
+                text=texto,
+                command=comando,
+                width=15,
+                height=2,
+                bg="#4C78FF",
+                fg="white",
+                font=("Arial",11,"bold")
+            ).grid(
+                row=fila,
+                column=columna,
+                padx=8,
+                pady=8
+            )
+
+
+            columna += 1
+
+            if columna == 3:
+                columna = 0
+                fila += 1
+
+
+
+        # Campos extra
+
+        tk.Label(
+            self.frame,
+            text="a:",
+            bg="#30304A",
+            fg="white"
+        ).grid(row=4,column=0)
+
+
+        self.a = tk.Entry(self.frame,width=10)
+        self.a.grid(row=4,column=1)
+
+
+
+        tk.Label(
+            self.frame,
+            text="b:",
+            bg="#30304A",
+            fg="white"
+        ).grid(row=4,column=2)
+
+
+        self.b = tk.Entry(self.frame,width=10)
+        self.b.grid(row=4,column=3)
+
+
+
+        tk.Label(
+            self.frame,
+            text="Punto límite:",
+            bg="#30304A",
+            fg="white"
+        ).grid(row=5,column=0)
+
+
+        self.punto = tk.Entry(self.frame,width=10)
+        self.punto.grid(row=5,column=1)
+
+
+
+        tk.Label(
+            self.frame,
+            text="Valor x:",
+            bg="#30304A",
+            fg="white"
+        ).grid(row=5,column=2)
+
+
+        self.valor = tk.Entry(self.frame,width=10)
+        self.valor.grid(row=5,column=3)
+
+
+
+        self.resultado = tk.StringVar()
+
+
+        tk.Label(
+            self.frame,
+            textvariable=self.resultado,
+            font=("Arial",14,"bold"),
+            bg="#30304A",
+            fg="#00FFAA"
+        ).grid(
+            row=6,
+            column=0,
+            columnspan=4,
+            pady=20
+        )
+
+
+
+        # Historial
+
+        tk.Label(
+            self.frame,
+            text="Historial",
+            font=("Arial",14,"bold"),
+            bg="#30304A",
+            fg="white"
+        ).grid(row=0,column=4)
+
+
+
+        self.historial = tk.Listbox(
+            self.frame,
+            width=45,
+            height=18,
+            bg="#151520",
+            fg="white"
+        )
+
+
+        self.historial.grid(
+            row=1,
+            column=4,
+            rowspan=6,
+            padx=20
+        )
+
+
+
+        # Gráfica
+
+        self.figura = plt.Figure(
+            figsize=(5,4),
+            dpi=100
+        )
+
+
+        self.canvas = FigureCanvasTkAgg(
+            self.figura,
+            self.root
+        )
+
+        self.canvas.get_tk_widget().pack(
+            fill="both",
+            expand=True
+        )
+
+
+
+    # ---------------- FUNCIONES ----------------
+
+
+    def obtener_funcion(self):
+
+        texto = self.entrada.get()
+
+        if texto == "":
+            raise Exception("Ingrese una función")
+
+        return parse_expr(texto)
+
+
+
+    def guardar(self,texto):
+
+        self.historial.insert(
+            tk.END,
+            texto
+        )
+
+
+
+    def derivar(self):
+
+        try:
+
+            f = self.obtener_funcion()
+
+            r = diff(f,x)
+
+            self.resultado.set(
+                f"Derivada: {r}"
+            )
+
+            self.guardar(
+                f"Derivada de {f} = {r}"
+            )
+
+
+        except Exception as e:
+            messagebox.showerror("Error",e)
+
+
+
+    def integrar(self):
+
+        try:
+
+            f=self.obtener_funcion()
+
+            r=integrate(f,x)
+
+            self.resultado.set(
+                f"Integral: {r}+C"
+            )
+
+
+            self.guardar(
+                f"Integral {f} = {r}+C"
+            )
+
+
+        except Exception as e:
+            messagebox.showerror("Error",e)
+
+
+
+    def integral_definida(self):
+
+        try:
+
+            f=self.obtener_funcion()
+
+            a=float(self.a.get())
+            b=float(self.b.get())
+
+
+            r=integrate(
+                f,
+                (x,a,b)
+            )
+
+
+            self.resultado.set(
+                f"Integral definida: {r}"
+            )
+
+
+            self.guardar(
+                f"∫[{a},{b}] {f} dx = {r}"
+            )
+
+
+        except Exception as e:
+            messagebox.showerror("Error",e)
+
+
+
+    def limite(self):
+
+        try:
+
+            f=self.obtener_funcion()
+
+            p=float(self.punto.get())
+
+            r=limit(
+                f,x,p
+            )
+
+
+            self.resultado.set(
+                f"Límite: {r}"
+            )
+
+
+            self.guardar(
+                f"Lim x->{p} {f}={r}"
+            )
+
+
+        except Exception as e:
+            messagebox.showerror("Error",e)
+
+
+
+    def evaluar(self):
+
+        try:
+
+            f=self.obtener_funcion()
+
+            valor=float(self.valor.get())
+
+
+            r=f.subs(
+                x,
+                valor
+            )
+
+
+            self.resultado.set(
+                f"Resultado: {r}"
+            )
+
+
+            self.guardar(
+                f"{f} evaluada en {valor} = {r}"
+            )
+
+
+        except Exception as e:
+            messagebox.showerror("Error",e)
+
+
+
+    def graficar(self):
+
+        try:
+
+            f=self.obtener_funcion()
+
+            funcion=lambdify(
+                x,
+                f,
+                "numpy"
+            )
+
+
+            valores=np.linspace(
+                -10,
+                10,
+                400
+            )
+
+
+            y=funcion(valores)
+
+
+            self.figura.clear()
+
+
+            ax=self.figura.add_subplot(111)
+
+            ax.plot(
+                valores,
+                y
+            )
+
+            ax.axhline(0)
+            ax.axvline(0)
+
+            ax.grid(True)
+
+            ax.set_title(
+                "Gráfica de f(x)"
+            )
+
+
+            self.canvas.draw()
+
+
+            self.guardar(
+                f"Gráfica de {f}"
+            )
+
+
+        except Exception as e:
+            messagebox.showerror("Error",e)
+
+
+
+    def limpiar(self):
+
+        self.entrada.delete(
+            0,
+            tk.END
+        )
+
+        self.resultado.set("")
+
+        self.historial.delete(
+            0,
+            tk.END
+        )
+
+        self.figura.clear()
+
+        self.canvas.draw()
+
+
+
+# EJECUCIÓN
+
+if __name__ == "__main__":
+
+    ventana = tk.Tk()
+
+    app = CalculadoraCalculoII(
+        ventana
+    )
+
+    ventana.mainloop()
